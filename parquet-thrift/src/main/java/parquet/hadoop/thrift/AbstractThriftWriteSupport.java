@@ -22,6 +22,7 @@ import org.apache.thrift.TBase;
 
 import com.twitter.elephantbird.pig.util.ThriftToPig;
 
+import parquet.ClassLoading;
 import parquet.Log;
 import parquet.hadoop.BadConfigurationException;
 import parquet.hadoop.api.WriteSupport;
@@ -53,7 +54,7 @@ public abstract class AbstractThriftWriteSupport<T> extends WriteSupport<T> {
 
     try {
       @SuppressWarnings("unchecked")
-      Class thriftClass = Class.forName(thriftClassName);
+      Class thriftClass = configuration.getClassByName(thriftClassName);
       return thriftClass;
     } catch (ClassNotFoundException e) {
       throw new BadConfigurationException("the class "+thriftClassName+" in job conf at " + PARQUET_THRIFT_CLASS + " could not be found", e);
@@ -100,7 +101,7 @@ public abstract class AbstractThriftWriteSupport<T> extends WriteSupport<T> {
 
   protected boolean isPigLoaded() {
     try {
-      Class.forName("org.apache.pig.impl.logicalLayer.schema.Schema");
+      ClassLoading.getClassByName("org.apache.pig.impl.logicalLayer.schema.Schema");
       return true;
     } catch (ClassNotFoundException e) {
       LOG.info("Pig is not loaded, pig metadata will not be written");
